@@ -7,12 +7,11 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
-import pandas as pd
 from ase.io import read, write
 from ase.optimize import LBFGS
-from fairchem.core import pretrained_mlip, FAIRChemCalculator
-
 from conformer_app.core.config import UMAConfig, OutputConfig
+from conformer_app.uma_layer.calculator import create_uma_calculator
+from conformer_app.uma_layer.summary import write_uma_summary
 
 # Windows + fairchem + OpenMP 対策（多重ロードを許容）
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
@@ -62,15 +61,6 @@ def _log_side(msg: str) -> None:
         st.sidebar.write(msg)
     except Exception:
         pass
-
-
-def _build_calculator(model_name: str, device: str, task_name: str) -> FAIRChemCalculator:
-    """
-    fairchem の事前学習モデルから Calculator を構築する。
-    """
-    predictor = pretrained_mlip.get_predict_unit(model_name, device=device)
-    calc = FAIRChemCalculator(predictor, task_name=task_name)
-    return calc
 
 
 def _log_uma_line(log_path: Optional[str], msg: str) -> None:
@@ -152,7 +142,13 @@ def _uma_optimize_xyz_batch_fairchem(
     batch_start = time.time()
 
     # Calculator 構築
-    calc = _build_calculator(model_name, device, task_name)
+    calc = create_uma_calculator(
+        UMAConfig(
+            model_name=model_name,
+            device=device,
+            task_name=task_name,
+        )
+    )
 
     results: List[Dict[str, Any]] = []
 
@@ -343,29 +339,6 @@ def _uma_optimize_xyz_batch_fairchem(
     return results
 
 
-def _write_uma_summary_excel(id_dir: str, results: List[Dict[str, Any]]) -> str:
-    """
-    UMA 最適化結果を ID フォルダ直下に UMA_summary.xlsx として保存する。
-    """
-    if not results:
-        return ""
-
-    try:
-        df = pd.DataFrame(results)
-    except Exception as e:
-        _log_side(f"[{os.path.basename(id_dir)}] UMA summary DataFrame 生成に失敗: {e}")
-        return ""
-
-    out_path = os.path.join(id_dir, "UMA_summary.xlsx")
-    try:
-        df.to_excel(out_path, index=False, sheet_name="UMA")
-    except Exception as e:
-        _log_side(f"[{os.path.basename(id_dir)}] UMA_summary.xlsx 書き込み失敗: {e}")
-        return ""
-
-    return out_path
-
-
 # ==========================
 # 公開関数: run_uma_for_job
 # ==========================
@@ -462,7 +435,7 @@ def run_uma_for_job(
             n_structures=0,
         )
 
-    summary_path = _write_uma_summary_excel(str(id_dir), results)
+    summary_path = write_uma_summary(str(id_dir), results)
 
     # 結果のステータス集計
     any_ok = any(r.get("status") == "ok" for r in results)
@@ -488,4 +461,3 @@ def run_uma_for_job(
         uma_dir=str(uma_dir),
         n_structures=len(results),
     )
-
