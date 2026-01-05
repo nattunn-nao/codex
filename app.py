@@ -152,12 +152,6 @@ def find_qm_target_dir(mol_id: str) -> Optional[Path]:
 # タイミングログ
 # =========================
 
-def _fmt_sec(dt: Optional[float]) -> str:
-    if dt is None:
-        return "None"
-    return f"{dt:.3f}"
-
-
 def _fmt_hms_and_sec(dt: Optional[float]) -> str:
     """
     秒数 dt から "HH:MM:SS (xxxx.xxx sec)" という表示文字列を返す。
@@ -274,8 +268,6 @@ def main():
 
     ids: List[str] = []
     smis: List[str] = []
-    resume_mode: bool = False
-
     if uploaded is not None:
         # まず DataFrame として中身を覗いて、requirement か progress か判定
         try:
@@ -295,8 +287,6 @@ def main():
                 # ======================
                 # 既存 progress.xlsx (resume モード)
                 # ======================
-                resume_mode = True
-
                 # アップロードされたファイルをそのまま progress.xlsx として保存
                 df_up.to_excel("./progress.xlsx", index=False)
 
