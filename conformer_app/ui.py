@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from typing import List, Tuple
-
-import pandas as pd
 import streamlit as st
 
 from conformer_app.core.config import (
@@ -12,59 +9,6 @@ from conformer_app.core.config import (
     QMConfig,
     OutputConfig,
 )
-
-
-# =========================
-# Excel 読み込み（ID / SMILES 抜き出し）
-# =========================
-
-def parse_requirement_excel(uploaded_file) -> Tuple[List[str], List[str]]:
-    """
-    requirement Excel (.xlsx) から ID と SMILES のリストを取り出す。
-
-    想定フォーマット:
-      - A列: ID
-      - B列: SMILES
-      - C列以降: 無視
-
-    ヘッダー行の有無は問わず、"SMILES" という文字列を含む行はスキップする。
-    """
-    if uploaded_file is None:
-        return [], []
-
-    try:
-        df = pd.read_excel(uploaded_file)
-    except Exception as e:
-        st.error(f"Excel の読み込みに失敗しました: {e}")
-        return [], []
-
-    if df.shape[1] < 2:
-        st.error("Excel の列数が足りません（少なくとも A列=ID, B列=SMILES が必要）。")
-        return [], []
-
-    col_id = df.iloc[:, 0].astype(str).str.strip()
-    col_smi = df.iloc[:, 1].astype(str).str.strip()
-
-    ids: List[str] = []
-    smis: List[str] = []
-
-    for id_raw, smi_raw in zip(col_id, col_smi):
-        smi = (smi_raw or "").strip()
-        id_ = (id_raw or "").strip()
-
-        # 空行や "SMILES" ヘッダー行をスキップ
-        if not smi:
-            continue
-        if smi.lower() == "smiles":
-            continue
-
-        if not id_:
-            id_ = smi  # ID が空なら SMILES を ID 代わりにする
-
-        ids.append(id_)
-        smis.append(smi)
-
-    return ids, smis
 
 
 # =========================

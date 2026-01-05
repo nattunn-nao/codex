@@ -20,12 +20,12 @@ from conformer_app.mm_layer import run_mm_for_job
 from conformer_app.uma_layer import run_uma_for_job
 from conformer_app.qm_layer import run_qm_for_job
 from conformer_app.app_io.excel_io import (
+    parse_requirement_excel,
     write_progress_excel,
     create_initial_progress_excel,
     load_progress_excel,
 )
 from conformer_app.ui import (
-    parse_requirement_excel,
     ui_embed_block,
     ui_mm_block,
     ui_uma_block,      # ← UMA 設定（ON/OFF 含む）
@@ -324,8 +324,13 @@ def main():
                 # requirement.xlsx モード（新規計算）
                 # ======================
                 uploaded.seek(0)
-                ids, smis = parse_requirement_excel(uploaded)
-                st.success(f"読み込んだ分子数: {len(ids)} 件")
+                try:
+                    ids, smis = parse_requirement_excel(uploaded)
+                except Exception as e:
+                    st.error(f"Excel の読み込みに失敗しました: {e}")
+                    ids, smis = [], []
+                else:
+                    st.success(f"読み込んだ分子数: {len(ids)} 件")
 
                 if ids:
                     # 初期 progress.xlsx を作成

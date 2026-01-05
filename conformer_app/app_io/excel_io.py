@@ -92,6 +92,29 @@ def _parse_requirement_df(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
 # requirement Excel 読み込み
 # ======================================================================
 
+def parse_requirement_excel(uploaded_file) -> Tuple[List[str], List[str]]:
+    """
+    requirement Excel (.xlsx) から ID と SMILES のリストを取り出す。
+
+    想定フォーマット:
+      - A列: ID
+      - B列: SMILES
+      - C列以降: 無視
+
+    ヘッダー行の有無は問わず、"SMILES" という文字列を含む行はスキップする。
+    """
+    if uploaded_file is None:
+        return [], []
+
+    try:
+        df = pd.read_excel(uploaded_file)
+    except Exception as e:
+        raise RuntimeError(f"Excel の読み込みに失敗しました: {e}") from e
+
+    ids, smis = _parse_requirement_df(df)
+    return ids, smis
+
+
 def load_requirement_excel(path: str | Path) -> Tuple[List[str], List[str]]:
     """
     requirement Excel (.xlsx) を読み込み、(ids, smis) を返す。

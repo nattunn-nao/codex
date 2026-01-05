@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from .excel_io import (
+    parse_requirement_excel,
     load_requirement_excel,
     create_initial_progress_excel,
     write_progress_excel,
@@ -20,6 +21,7 @@ from .paths import (
 
 __all__ = [
     "load_requirement_excel",
+    "parse_requirement_excel",
     "create_initial_progress_excel",
     "write_progress_excel",
     "load_progress_excel",
