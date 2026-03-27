@@ -1,0 +1,7 @@
+surfaces:
+  - id: si001
+    label: Si(001)
+    path: data/surfaces/si001
+  - id: sio2_amorphous_01
+    label: SiO2 amorphous #1
+    path: data/surfaces/sio2_amorphous_01
