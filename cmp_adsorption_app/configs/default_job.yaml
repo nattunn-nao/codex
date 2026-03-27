@@ -1,0 +1,17 @@
+job_name: cmp_adsorption
+input_adsorbates_dir: adsorbates
+results_dir: results
+mock_gfnff: true
+mock_uma: true
+pose:
+  xy_step: 2.0
+  z_values: [1.8, 2.5, 3.2]
+  rotations_deg: [0, 90, 180, 270]
+  max_poses: 48
+filters:
+  min_distance: 1.2
+  max_overlap_fraction: 0.0
+pruning:
+  keep_top_n_after_gfnff: 10
+ranking:
+  top_k: 5
